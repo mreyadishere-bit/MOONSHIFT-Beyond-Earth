@@ -1,0 +1,82 @@
+s="ms-explore-body" id="msExploreBody"></div>
+      </section>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#msExploreClose').onclick = closeModal;
+      overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+      overlay.querySelectorAll('.ms-explore-tab').forEach(tab => {
+        tab.onclick = () => {
+          activeFilter = tab.dataset.filter;
+          overlay.querySelectorAll('.ms-explore-tab').forEach(t => t.classList.toggle('active', t === tab));
+          renderCards();
+        };
+      });
+      overlay.querySelector('#msExploreBody').onclick = (e) => {
+        const btn = e.target.closest('[data-ms-action]');
+        if (!btn) return;
+        const act = btn.dataset.msAction;
+        const roomId = btn.dataset.msRoom;
+        closeModal();
+        if (act === 'voice') {
+          window.MoonshiftLiveGuide?.start?.();
+        } else if (act === 'audio') {
+          window.AudioController?.togglePanel?.();
+        } else if (act === 'waypoint' && roomId) {
+          if (typeof window.StationMap?.setWaypoint === 'function') {
+            window.StationMap.setWaypoint(roomId);
+          } else if (window.MissionUI) {
+            window.MissionUI.waypointRoom = roomId;
+          }
+          window.MissionUI?.notify?.(`✦ Waypoint set to ${window.StationMap?.rooms?.[roomId]?.name || roomId}`);
+        }
+      };
+    }
+    renderCards();
+    overlay.hidden = false;
+  }
+
+  function closeModal() {
+    if (overlay) overlay.hidden = true;
+  }
+
+  function mountHudButton() {
+    const bar = document.querySelector('.hud-actions-group');
+    if (bar && !document.getElementById('msExploreBtn')) {
+      const btn = document.createElement('button');
+      btn.className = 'hud-btn';
+      btn.id = 'msExploreBtn';
+      btn.type = 'button';
+      btn.title = 'Open Mission & Feature Navigator (N)';
+      btn.innerHTML = '✦ <span>EXPLORE</span>';
+      btn.onclick = (e) => { e.stopPropagation(); openModal(); };
+      bar.appendChild(btn);
+    }
+    const voiceActions = document.querySelector('.dialogue-voice-actions');
+    if (voiceActions && !document.getElementById('msNpcLiveBtn')) {
+      const lbtn = document.createElement('button');
+      lbtn.type = 'button';
+      lbtn.id = 'msNpcLiveBtn';
+      lbtn.className = 'ms-npc-live-btn';
+      lbtn.textContent = '🎙 Talk Live with Guide';
+      lbtn.onclick = (e) => { e.stopPropagation(); window.MoonshiftLiveGuide?.start?.(); };
+      voiceActions.appendChild(lbtn);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'n' || e.key === 'N') {
+      if (document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+      if (overlay && !overlay.hidden) closeModal();
+      else openModal();
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(mountHudButton, 300), { once: true });
+  } else {
+    setTimeout(mountHudButton, 300);
+  }
+  window.MoonshiftNavigator = { open: openModal, close: closeModal };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "eyad": {
+    "luna-7, this is eyad at mission control. our new astronaut is almost here.": "/voices/eyad_001.ogg?v=20261115-final",
+    "incoming message... that signal is not coming from mission control.": "/voices/eyad_002.ogg?v=20261115-final",
+    "eyad here. the station is ready. walk with wasd or the arrow keys, then press e near something glowing.": "/voices/eyad_003.ogg?v=20261115-final",
+    "warning: atmospheric co2 rising past 850 ppm. amine bed saturation detected in life support.": "/voices/eyad_004.ogg?v=20261115-final",
+    "training alert! nasa observed an x8.7 solar flare on may 14, 2024. imagine we receive a space-weather warning: how should our crew prepare?": "/voices/eyad_005.ogg?v=20261115-final",
+    "welcome aboard! everything is floating, but every object still has momentum. we lost a science signal. help the crew keep air flowing, control our machines, and dock a supply capsule.": "/voices/eyad_006.ogg?v=20261115-final",
+    "movement is gentle here. small pushes matter. find the research hub and press e.": "/voices/eyad_007.ogg?v=20261115-final",
+    "environmental systems are slipping. air and water recovery both need your help.": "/voices/eyad_008.ogg?v=20261115-final",
+    "training alert: a debris sweep is approaching. let us prepare the shield settings.": "/voices/eyad_009.ogg?v=20261115-final",
+    "mars is farther away, drier and dustier than the moon. let us get started.": "/voices/eyad_010.ogg?v=20261115-final",
+    "habitat support systems need attention. air cleaning and water recovery must both stay online.": "/voices/eyad_011.ogg?v=20261115-final",
+    "storm alert. dust conditions are intensifying. prepare the shelter systems.": "/voices/eyad_012.ogg?v=20261115-final"
+  },
+  "rawan": {
+    "hello junior! welcome to luna-7. i lead our astrobiology and life support research.": "/voices/rawan-001.ogg?v=20261115-final",
+    "our garden needs water and electric lights, just like the air machines need power!": "/voices/rawan-002.ogg?v=20261115-final",
+    "junior! carbon dioxide buildup causes fatigue. we need you to manually cycle the vacuum desorber!": "/voices/rawan-003.ogg?v=20261115-final",
+    "good work! we prepared the protected area in time for our training scenario.": "/voices/rawan-004.ogg?v=20261115-final",
+    "welcome to luna-7! i oversee our closed-loop life support and lunar crops.": "/voices/rawan-005.ogg?v=20261115-final",
+    "objects keep moving in orbit until something slows them down. let us test that in our microgravity lab.": "/voices/rawan-006.ogg?v=20261115-final",
+    "a space station survives because it recycles. let us keep the loop working.": "/voices/rawan-007.ogg?v=20261115-final",
+    "great work. one final task remains: our earth relay needs a clean timing lock.": "/voices/rawan-008.ogg?v=20261115-final",
+    "welcome aboard the orbital lab. here, momentum matters as much as the push you give.": "/voices/rawan-009.ogg?v=20261115-final",
+    "plants help feed the crew, but they also need power and water. let us care for the green dome.": "/voices/rawan-010.ogg?v=20261115-final",
+    "closed-loop systems keep a small outpost alive. let us repair them carefully.": "/voices/rawan-011.ogg?v=20261115-final",
+    "one last challenge: re-establish the relay to earth.": "/voices/rawan-012.ogg?v=20261115-final",
+    "welcome to ares-1. on mars, every watt, litre and delay matters.": "/voices/rawan-013.ogg?v=20261115-final"
+  }
+}

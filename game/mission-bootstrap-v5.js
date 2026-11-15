@@ -1,0 +1,4 @@
+(()=>{'use strict';let started=false;
+function script(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src+'?v=7.0';s.onload=resolve;s.onerror=()=>reject(Error('Unable to load '+src));document.body.append(s)})}
+async function begin(){if(started)return;started=true;try{for(const src of ['/mission-core-v6.js','/water-v6.js','/tasks-v4.js','/mission-upgrades-v5.js','/crew-v5.js','/health-v6.js','/presentation-v6.js','/progress-model-v7.js','/session-runtime-v7.js','/crew-v7.js','/mission-visuals-v7.js'])await script(src);window.MoonshiftMissionUpdateActive={version:'7.0',installed:true,gadgetEffects:true,crewSupport:true}}catch(e){console.error('Mission upgrade failed',e);window.MoonshiftMissionUpdateActive={version:'7.0',installed:false,error:e.message}}}
+if(document.readyState==='complete')begin();else window.addEventListener('load',begin,{once:true});})();
