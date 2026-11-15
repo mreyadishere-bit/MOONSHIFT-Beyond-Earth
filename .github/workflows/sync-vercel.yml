@@ -1,0 +1,143 @@
+name: Mirror published MOONSHIFT from Vercel
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/sync-vercel.yml'
+permissions:
+  contents: write
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the deployed production assets
+        env:
+          BASE_URL: https://moonshift-beyond-earth-v32.vercel.app
+        run: |
+          python3 - <<'PY'
+          import os, concurrent.futures, urllib.request, urllib.error, pathlib
+          paths = [
+            "brand/banner.webp",
+            "brand/icon-16.png",
+            "brand/icon-180.png",
+            "brand/icon-192.png",
+            "brand/icon-32.png",
+            "brand/icon-512.png",
+            "brand/logo.webp",
+            "brand/wordmark.webp",
+            "chunks/part-000.txt",
+            "chunks/part-001.txt",
+            "chunks/part-002.txt",
+            "chunks/part-003.txt",
+            "chunks/part-004.txt",
+            "chunks/part-005.txt",
+            "chunks/part-006.txt",
+            "chunks/part-007.txt",
+            "chunks/part-008.txt",
+            "chunks/part-009.txt",
+            "chunks/part-010.txt",
+            "chunks/part-011.txt",
+            "chunks/part-012.txt",
+            "chunks/part-013.txt",
+            "chunks/part-014.txt",
+            "chunks/part-015.txt",
+            "chunks/part-016.txt",
+            "chunks/part-017.txt",
+            "chunks/part-018.txt",
+            "chunks/part-019.txt",
+            "chunks/part-020.txt",
+            "chunks/part-021.txt",
+            "chunks/part-022.txt",
+            "chunks/part-023.txt",
+            "crew-v5.js",
+            "crew-v7.js",
+            "crew/atlas-v7.webp",
+            "crew/atlas.avif",
+            "demo.html",
+            "demo/index.html",
+            "favicon.ico",
+            "frame-clock-v7.js",
+            "health-v6.js",
+            "index.html",
+            "manifest.webmanifest",
+            "mission-bootstrap-v5.js",
+            "mission-core-v6.js",
+            "mission-science-v5.js",
+            "mission-upgrades-v5.js",
+            "mission-visuals-v7.js",
+            "portraits/abdelrahman.webp",
+            "portraits/eyad.webp",
+            "portraits/fatema.webp",
+            "portraits/rawan.webp",
+            "portraits/rewaa.webp",
+            "presentation-v6.css",
+            "presentation-v6.js",
+            "progress-model-v7.js",
+            "session-runtime-v7.js",
+            "session-storage-v7.js",
+            "session-v7.css",
+            "tasks-v2.js",
+            "tasks-v3-adapter.js",
+            "tasks-v4.js",
+            "vercel.json",
+            "voice-v8-map.json",
+            "voices/eyad_001.ogg",
+            "voices/eyad_002.ogg",
+            "voices/eyad_003.ogg",
+            "voices/eyad_004.ogg",
+            "voices/eyad_005.ogg",
+            "voices/eyad_006.ogg",
+            "voices/eyad_007.ogg",
+            "voices/eyad_008.ogg",
+            "voices/eyad_009.ogg",
+            "voices/eyad_010.ogg",
+            "voices/eyad_011.ogg",
+            "voices/eyad_012.ogg",
+            "voices/rawan-001.ogg",
+            "voices/rawan-002.ogg",
+            "voices/rawan-003.ogg",
+            "voices/rawan-004.ogg",
+            "voices/rawan-005.ogg",
+            "voices/rawan-006.ogg",
+            "voices/rawan-007.ogg",
+            "voices/rawan-008.ogg",
+            "voices/rawan-009.ogg",
+            "voices/rawan-010.ogg",
+            "voices/rawan-011.ogg",
+            "voices/rawan-012.ogg",
+            "voices/rawan-013.ogg",
+            "water-v6.js",
+          ]
+          base = os.environ["BASE_URL"]
+          def copy(p):
+              url=base+"/"+p
+              req=urllib.request.Request(url,headers={"User-Agent":"MOONSHIFT-Deployment-Mirror/1.0"})
+              with urllib.request.urlopen(req,timeout=35) as f:
+                  data=f.read()
+                  typ=f.headers.get("Content-Type","")
+              if p=="index.html" and (b"MOONSHIFT" not in data.upper() or len(data)<15000):
+                  raise RuntimeError("Deployment returned a protected/error page rather than the game")
+              if not data or (b"Authentication Required" in data[:3000]):
+                  raise RuntimeError("Not a game asset: "+url)
+              target=pathlib.Path(p)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              target.write_bytes(data)
+              return p
+          errors=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+              futures={pool.submit(copy,p):p for p in paths}
+              for f in concurrent.futures.as_completed(futures):
+                  try: print("COPIED", f.result())
+                  except Exception as e: errors.append((futures[f],str(e)))
+          if errors:
+              for p,e in errors: print("ERROR",p,e)
+              raise SystemExit("Not committing an incomplete deployment copy")
+          print("Verified",len(paths),"production files")
+          PY
+      - name: Commit exact deployment assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "Mirror latest MOONSHIFT Vercel production deployment" && git push)
