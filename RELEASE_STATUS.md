@@ -1,12 +1,11 @@
-# Deployment & verification status
+# MOONSHIFT repository status — 2026-11-15
 
-Prepared: 2026-11-15.
+GitHub repository: https://github.com/mreyadishere-bit/MOONSHIFT-Beyond-Earth
 
-- Source package: complete static 2D game files, 25 V8 replacement voiced lines, portraits, world chunks and regression tests.
-- Automated tests: 23/23 pass when run from repository root.
-- Remaining: run full browser E2E and actual on-device audio listening; review the outstanding targeted-fixes specification.
-- GitHub: NOT PUSHED from this environment (the connected GitHub action set does not offer repository creation; container has no network/DNS).
-- Vercel: NOT DEPLOYED from this source package; the existing Vercel alias still refers to an earlier deployment.
-- Live Voice API source: not included in available V8 zip; must recover production endpoint before claiming Live Voice restored.
+The game source, world chunks, image assets, and recorded V8 dialogue are committed in `game/` at commit `acec464f8d1b19486f2553b8bbb8a15cebca9c79`.
 
-Do not present this candidate as an independently verified final competition build.
+The live Vercel production alias is https://moonshift-beyond-earth-v32.vercel.app (deployment `dpl_87XQFSeV65r8caaacm1VLvQnMm1a`).
+
+A GitHub Actions workflow at `.github/workflows/sync-vercel.yml` was added to mirror the publicly served deployment files, but a complete 1:1 mirror has not yet been verified. The live API function source `api/live-token.js` is not in the committed candidate and must be recovered before claiming the Live Voice backend is included.
+
+Do not mistake the candidate commit for a proven 1:1 Vercel production snapshot. The production site remains unchanged.
