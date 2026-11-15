@@ -146,7 +146,7 @@ jobs:
                   print("Unavailable:",p,e)
               with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as s:
                   s.write("### MOONSHIFT source verification passed\n")
-                  s.write(f"{len(paths)} existing source assets verified in game/.\n\n")
+                  s.write(f"{len(present)} committed source assets verified in game/.\n\n")
                   s.write(f"Vercel public mirror **not verified**: {len(errors)} files inaccessible. Existing files left untouched.\n")
           else:
               for p,data in results.items():
