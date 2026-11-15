@@ -1,4 +1,4 @@
-name: Mirror published MOONSHIFT from Vercel
+name: Verify game and sync accessible production assets
 on:
   workflow_dispatch:
   push:
@@ -7,16 +7,16 @@ on:
 permissions:
   contents: write
 jobs:
-  mirror:
+  verify-and-sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download the deployed production assets
+      - name: Verify committed playable source and attempt Vercel mirror
         env:
           BASE_URL: https://moonshift-beyond-earth-v32.vercel.app
         run: |
           python3 - <<'PY'
-          import os, concurrent.futures, urllib.request, urllib.error, pathlib
+          import os, concurrent.futures, urllib.request, pathlib, tempfile, shutil
           paths = [
             "brand/banner.webp",
             "brand/icon-16.png",
@@ -109,35 +109,60 @@ jobs:
             "voices/rawan-013.ogg",
             "water-v6.js",
           ]
-          base = os.environ["BASE_URL"]
-          def copy(p):
-              url=base+"/"+p
-              req=urllib.request.Request(url,headers={"User-Agent":"MOONSHIFT-Deployment-Mirror/1.0"})
-              with urllib.request.urlopen(req,timeout=35) as f:
-                  data=f.read()
-                  typ=f.headers.get("Content-Type","")
-              if p=="index.html" and (b"MOONSHIFT" not in data.upper() or len(data)<15000):
-                  raise RuntimeError("Deployment returned a protected/error page rather than the game")
-              if not data or (b"Authentication Required" in data[:3000]):
-                  raise RuntimeError("Not a game asset: "+url)
-              target=pathlib.Path(p)
-              target.parent.mkdir(parents=True,exist_ok=True)
-              target.write_bytes(data)
-              return p
+          source = pathlib.Path("game")
+          missing = [p for p in paths if not (source / p).is_file()]
+          if missing:
+              raise SystemExit("Missing committed game source assets: " + ", ".join(missing))
+          print("Verified", len(paths), "source assets already present in game/")
+          # Only call this a Vercel mirror if the entire public asset set can be retrieved.
+          # Vercel deployment source (including private functions) is NOT necessarily public.
+          def retrieve(p):
+              req=urllib.request.Request(os.environ["BASE_URL"] + "/" + p,
+                  headers={"User-Agent":"MOONSHIFT-Asset-Verification/1.0"})
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  data=response.read()
+                  content_type=response.headers.get("content-type","")
+              if not data or b"Authentication Required" in data[:5000] or b"Vercel Authentication" in data[:5000]:
+                  raise ValueError("Access denied or empty asset")
+              if p.endswith((".png",".webp",".avif",".ico",".ogg")) and "text/html" in content_type:
+                  raise ValueError("HTML returned instead of binary asset")
+              if p.endswith((".html", ".js", ".css", ".txt", ".json", ".webmanifest")) and "text/html" in content_type and not p.endswith(".html"):
+                  raise ValueError("HTML returned instead of requested asset")
+              return p,data
+          results={}
           errors=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
-              futures={pool.submit(copy,p):p for p in paths}
-              for f in concurrent.futures.as_completed(futures):
-                  try: print("COPIED", f.result())
-                  except Exception as e: errors.append((futures[f],str(e)))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+              futures={pool.submit(retrieve,p):p for p in paths}
+              for future in concurrent.futures.as_completed(futures):
+                  try:
+                      p,data=future.result()
+                      results[p]=data
+                  except Exception as e:
+                      errors.append((futures[future],str(e)))
           if errors:
-              for p,e in errors: print("ERROR",p,e)
-              raise SystemExit("Not committing an incomplete deployment copy")
-          print("Verified",len(paths),"production files")
+              print("Production mirror unavailable for",len(errors),"files; existing complete game/ source is preserved.")
+              for p,e in errors[:12]:
+                  print("Unavailable:",p,e)
+              with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as s:
+                  s.write("### MOONSHIFT source verification passed\n")
+                  s.write(f"{len(paths)} existing source assets verified in game/.\n\n")
+                  s.write(f"Vercel public mirror **not verified**: {len(errors)} files inaccessible. Existing files left untouched.\n")
+          else:
+              for p,data in results.items():
+                  (source/p).write_bytes(data)
+              with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as s:
+                  s.write("### MOONSHIFT production assets mirrored\n")
+                  s.write(f"{len(results)} accessible assets copied into game/. Live API backend is not included.\n")
+              print("Mirrored",len(results),"public production assets")
           PY
-      - name: Commit exact deployment assets
+      - name: Commit only verified changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || (git commit -m "Mirror latest MOONSHIFT Vercel production deployment" && git push)
+          git add game/
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync verified MOONSHIFT public production assets"
+            git push
+          else
+            echo "No game source changes required."
+          fi
